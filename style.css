@@ -1,6 +1,0 @@
-body { font-family: Arial; max-width: 1200px; margin: auto; padding: 20px; }
-header { text-align: center; background: #0047ab; color: white; padding: 20px; }
-#input-form { display: flex; gap: 10px; flex-wrap: wrap; padding: 20px; background: #f0f8ff; }
-button { background: #0047ab; color: white; padding: 10px 20px; border: none; cursor: pointer; }
-#heatmap { max-height: 400px; }
-footer { text-align: center; font-size: 0.8em; margin-top: 40px; }
