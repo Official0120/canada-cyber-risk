@@ -1,82 +1,91 @@
-<!DOCTYPE html>
+from pathlib import Path
+import json
+
+base = Path('output')
+base.mkdir(exist_ok=True)
+
+html = '''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CanadaCyberRisk Dashboard</title>
+  <title>CanadaCyberRisk SOC Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root{
-      --bg:#0b1220; --panel:#111a2e; --panel2:#0f1729; --text:#aaacb1; --muted:#9db0d1;
-      --line:#223154; --accent:#5b8cff; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
-      --card:#0f1729; --shadow:0 12px 30px rgba(0,0,0,.25);
+      --bg:#07111f; --bg2:#09192d; --panel:#0d1b30; --panel2:#10213a; --text:#aaacb1; --muted:#9bb0d3; --line:#1f3359;
+      --accent:#2f80ed; --accent2:#60a5fa; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444; --shadow:0 14px 34px rgba(0,0,0,.28);
     }
     [data-theme="light"]{
-      --bg:#f4f7fb; --panel:#ffffff; --panel2:#f8fbff; --text:#0f172a; --muted:#5b6b84;
-      --line:#d8e1ef; --accent:#2563eb; --good:#16a34a; --warn:#d97706; --bad:#dc2626;
-      --card:#ffffff; --shadow:0 12px 28px rgba(15,23,42,.08);
+      --bg:#eef5ff; --bg2:#f7fbff; --panel:#ffffff; --panel2:#f8fbff; --text:#0f172a; --muted:#4f6488; --line:#d7e2f2;
+      --accent:#2563eb; --accent2:#3b82f6; --good:#16a34a; --warn:#d97706; --bad:#dc2626; --shadow:0 14px 30px rgba(15,23,42,.08);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(180deg,var(--bg),#09101d);color:var(--text)}
-    [data-theme="light"] body{background:linear-gradient(180deg,#f6f9ff,#edf2fb)}
-    .wrap{max-width:1280px;margin:0 auto;padding:24px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
-    .brand h1{margin:0;font-size:clamp(28px,4vw,42px);letter-spacing:-.03em}
-    .brand p{margin:8px 0 0;color:var(--muted);max-width:760px;line-height:1.5}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(91,140,255,.08);color:var(--text);font-weight:600}
-    .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer;background:var(--accent);color:white;box-shadow:var(--shadow)}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at top, var(--bg2), var(--bg) 60%);color:var(--text)}
+    .wrap{max-width:1320px;margin:0 auto;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
+    .brand h1{margin:0;font-size:clamp(30px,4vw,46px);line-height:1.05;letter-spacing:-.04em}
+    .brand p{margin:10px 0 0;color:var(--muted);max-width:840px;line-height:1.6}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(47,128,237,.14);font-weight:700}
+    .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:var(--shadow)}
     .btn.secondary{background:transparent;color:var(--text);border:1px solid var(--line);box-shadow:none}
+    .controls{display:flex;flex-wrap:wrap;gap:12px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0 22px}
+    .stat{padding:18px;border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);box-shadow:var(--shadow)}
+    .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.1em}
+    .v{font-size:30px;font-weight:800;margin-top:8px}
+    .s{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.5}
     .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
     .card-hd{padding:18px 18px 0}
     .card-bd{padding:18px}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
-    .stat{padding:18px;border-radius:18px;background:rgba(91,140,255,.08);border:1px solid var(--line)}
-    .stat .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-    .stat .v{font-size:28px;font-weight:800;margin-top:8px}
-    .stat .s{margin-top:8px;color:var(--muted);font-size:13px}
     .section-title{margin:0 0 12px;font-size:18px}
     .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    .field{padding:14px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid var(--line)}
-    .field label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+    .field{padding:14px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+    .field label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
     .field small{display:block;color:var(--muted);margin-top:6px;line-height:1.4}
     select,input[type="range"],input[type="number"]{width:100%}
     select,input[type="number"]{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px}
     input[type="range"]{accent-color:var(--accent)}
     .toggle-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
-    .switch{position:relative;display:inline-block;width:54px;height:30px}
+    .switch{position:relative;display:inline-block;width:56px;height:30px}
     .switch input{opacity:0;width:0;height:0}
-    .slider{position:absolute;cursor:pointer;inset:0;background:#475569;border-radius:999px;transition:.2s}
+    .slider{position:absolute;cursor:pointer;inset:0;background:#4b628a;border-radius:999px;transition:.2s}
     .slider:before{content:"";position:absolute;height:22px;width:22px;left:4px;top:4px;background:#fff;border-radius:50%;transition:.2s}
     input:checked + .slider{background:var(--accent)}
-    input:checked + .slider:before{transform:translateX(24px)}
+    input:checked + .slider:before{transform:translateX(26px)}
     .full{grid-column:1/-1}
-    .controls{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
-    .tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .controls-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+    .tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
     .tag{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px}
     .chartbox{height:320px}
     canvas{max-width:100%;max-height:100%}
     .playbook{display:grid;gap:12px}
-    .tip{padding:14px 16px;border-radius:16px;border-left:4px solid var(--accent);background:rgba(37,99,235,.08)}
+    .tip{padding:14px 16px;border-radius:16px;border-left:4px solid var(--accent);background:rgba(47,128,237,.09);line-height:1.5}
     .tip.good{border-left-color:var(--good)}
     .tip.warn{border-left-color:var(--warn)}
     .tip.bad{border-left-color:var(--bad)}
     .footer{margin:18px 0 0;color:var(--muted);font-size:13px;text-align:center}
-    .progress{height:12px;background:#1e2b49;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+    .progress{height:12px;background:#163055;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
     .bar{height:100%;width:45%;background:linear-gradient(90deg,var(--good),var(--warn),var(--bad))}
-    @media (max-width: 980px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+    .mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+    .mini{padding:14px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+    .mini .l{color:var(--muted);font-size:12px;margin-bottom:8px}
+    .mini .n{font-weight:800;font-size:18px}
+    @media (max-width: 1024px){.grid{grid-template-columns:1fr}.stats,.mini-grid{grid-template-columns:1fr 1fr}}
+    @media (max-width: 640px){.stats,.mini-grid,.form-grid{grid-template-columns:1fr}.topbar{flex-direction:column}}
   </style>
 </head>
 <body>
   <div class="wrap" id="app" data-theme="dark">
     <div class="topbar">
       <div class="brand">
-        <div class="pill">🛡️ CanadaCyberRisk • Live Demo</div>
-        <h1>Canadian Cyber Risk Dashboard</h1>
-        <p>Interactive simulator for SOC Analyst, Risk Analyst, IT Support, and Cybersecurity internship applications in Canada.</p>
+        <div class="pill">🛡️ CanadaCyberRisk • SOC Dashboard</div>
+        <h1>Blue Cybersecurity Risk Dashboard</h1>
+        <p>Professional, recruiter-friendly Canadian cyber risk simulator with a polished SOC-style interface, clean analytics, and practical action recommendations.</p>
       </div>
       <div class="controls">
         <button class="btn secondary" onclick="toggleTheme()">Toggle Theme</button>
@@ -85,9 +94,9 @@
     </div>
 
     <div class="stats">
-      <div class="stat"><div class="k">Risk Level</div><div class="v" id="riskLevel">Low</div><div class="s" id="riskLabel">Balanced profile</div></div>
+      <div class="stat"><div class="k">Risk Level</div><div class="v" id="riskLevel">Low</div><div class="s" id="riskLabel">Healthy baseline controls</div></div>
       <div class="stat"><div class="k">Score</div><div class="v" id="riskScore">28</div><div class="s">Out of 100</div></div>
-      <div class="stat"><div class="k">Action</div><div class="v" id="actionText">Monitor</div><div class="s">Recommended next step</div></div>
+      <div class="stat"><div class="k">Priority</div><div class="v" id="actionText">Monitor</div><div class="s">Next best action</div></div>
     </div>
 
     <div class="grid">
@@ -96,26 +105,26 @@
         <div class="card-bd">
           <div class="form-grid">
             <div class="field"><label>Province</label><select id="province"><option>Ontario</option><option>Quebec</option><option>British Columbia</option><option>Alberta</option><option>Manitoba</option><option>Nova Scotia</option></select><small>Choose the operating location.</small></div>
-            <div class="field"><label>Industry</label><select id="industry"><option>Finance</option><option>Healthcare</option><option>Retail</option><option>Education</option><option>Government</option><option>Technology</option></select><small>Different industries face different threat profiles.</small></div>
-            <div class="field"><label>Company Size: <span id="sizeVal">120</span></label><input id="size" type="range" min="10" max="5000" value="120" oninput="sizeVal.textContent=this.value; computeRisk()"><small>Higher size can increase attack surface.</small></div>
-            <div class="field"><label>Remote Workers: <span id="remoteVal">35%</span></label><input id="remote" type="range" min="0" max="100" value="35" oninput="remoteVal.textContent=this.value+'%'; computeRisk()"><small>More remote work usually increases exposure.</small></div>
-            <div class="field"><label>Cloud Usage</label><select id="cloud" onchange="computeRisk()"><option>Low</option><option selected>Medium</option><option>High</option></select><small>Cloud adoption changes access and visibility risks.</small></div>
-            <div class="field"><label>Phishing Incidents (90 days)</label><input id="phish" type="number" min="0" max="999" value="4" oninput="computeRisk()"><small>Recent incidents increase the final score.</small></div>
-            <div class="field"><label>Security Training Frequency</label><select id="training" onchange="computeRisk()"><option>Monthly</option><option selected>Quarterly</option><option>Yearly</option><option>None</option></select><small>Training reduces phishing and social engineering risk.</small></div>
-            <div class="field"><label>Incident Response Plan</label><select id="ir" onchange="computeRisk()"><option selected>Yes</option><option>No</option></select><small>Prepared response lowers damage from incidents.</small></div>
-            <div class="field"><label>MFA Enabled</label><select id="mfa" onchange="computeRisk()"><option selected>Yes</option><option>No</option></select><small>Strongly lowers account compromise risk.</small></div>
-            <div class="field"><label>Backups Frequency</label><select id="backup" onchange="computeRisk()"><option>Daily</option><option selected>Weekly</option><option>Monthly</option><option>None</option></select><small>Good backups reduce ransomware impact.</small></div>
-            <div class="field"><label>Vendor Access Level</label><select id="vendor" onchange="computeRisk()"><option>Low</option><option selected>Medium</option><option>High</option></select><small>Third-party access can add supply-chain risk.</small></div>
-            <div class="field"><div class="toggle-row"><div><label style="margin-bottom:4px">Sensitive Data Stored</label><small>PII, finance, health, or government data.</small></div><label class="switch"><input type="checkbox" id="sensitive" onchange="computeRisk()"><span class="slider"></span></label></div></div>
+            <div class="field"><label>Industry</label><select id="industry"><option>Finance</option><option>Healthcare</option><option>Retail</option><option>Education</option><option>Government</option><option>Technology</option></select><small>Different industries have different exposure patterns.</small></div>
+            <div class="field"><label>Company Size: <span id="sizeVal">120</span></label><input id="size" type="range" min="10" max="5000" value="120" oninput="sizeVal.textContent=this.value; computeRisk()"><small>More endpoints and users can increase attack surface.</small></div>
+            <div class="field"><label>Remote Workers: <span id="remoteVal">35%</span></label><input id="remote" type="range" min="0" max="100" value="35" oninput="remoteVal.textContent=this.value+'%'; computeRisk()"><small>Remote access can raise exposure if controls are weak.</small></div>
+            <div class="field"><label>Cloud Usage</label><select id="cloud" onchange="computeRisk()"><option>Low</option><option selected>Medium</option><option>High</option></select><small>Cloud adoption affects identity, logging, and access risk.</small></div>
+            <div class="field"><label>Phishing Incidents (90 days)</label><input id="phish" type="number" min="0" max="999" value="4" oninput="computeRisk()"><small>Recent incidents are a strong warning sign.</small></div>
+            <div class="field"><label>Security Training Frequency</label><select id="training" onchange="computeRisk()"><option>Monthly</option><option selected>Quarterly</option><option>Yearly</option><option>None</option></select><small>Training helps reduce social engineering risk.</small></div>
+            <div class="field"><label>Incident Response Plan</label><select id="ir" onchange="computeRisk()"><option selected>Yes</option><option>No</option></select><small>Prepared response reduces damage and downtime.</small></div>
+            <div class="field"><label>MFA Enabled</label><select id="mfa" onchange="computeRisk()"><option selected>Yes</option><option>No</option></select><small>Protects accounts against password attacks.</small></div>
+            <div class="field"><label>Backups Frequency</label><select id="backup" onchange="computeRisk()"><option>Daily</option><option selected>Weekly</option><option>Monthly</option><option>None</option></select><small>Backups are important for ransomware resilience.</small></div>
+            <div class="field"><label>Vendor Access Level</label><select id="vendor" onchange="computeRisk()"><option>Low</option><option selected>Medium</option><option>High</option></select><small>Third-party access increases supply chain exposure.</small></div>
+            <div class="field"><div class="toggle-row"><div><label style="margin-bottom:4px">Sensitive Data Stored</label><small>PII, finance, health, or government records.</small></div><label class="switch"><input type="checkbox" id="sensitive" onchange="computeRisk()"><span class="slider"></span></label></div></div>
           </div>
-          <div class="controls">
+          <div class="controls-row">
             <button class="btn" onclick="computeRisk()">Run Risk Assessment</button>
             <button class="btn secondary" onclick="downloadJSON()">Download Report</button>
           </div>
           <div class="tagrow">
-            <div class="tag">MITRE-style severity scoring</div>
-            <div class="tag">Canadian job-market friendly</div>
-            <div class="tag">Responsive layout</div>
+            <div class="tag">SOC-style dashboard</div>
+            <div class="tag">Canadian job-market ready</div>
+            <div class="tag">Responsive and modern</div>
           </div>
         </div>
       </section>
@@ -124,6 +133,12 @@
         <div class="card-hd"><h2 class="section-title">Risk Summary</h2></div>
         <div class="card-bd">
           <div class="progress"><div class="bar" id="riskBar"></div></div>
+          <div class="mini-grid">
+            <div class="mini"><div class="l">MFA</div><div class="n" id="miniMfa">On</div></div>
+            <div class="mini"><div class="l">Backups</div><div class="n" id="miniBackup">Weekly</div></div>
+            <div class="mini"><div class="l">Cloud</div><div class="n" id="miniCloud">Medium</div></div>
+            <div class="mini"><div class="l">Training</div><div class="n" id="miniTraining">Quarterly</div></div>
+          </div>
           <div class="chartbox" style="margin-top:18px"><canvas id="chart"></canvas></div>
         </div>
       </section>
@@ -141,7 +156,6 @@
   const app = document.getElementById('app');
   const ctx = document.getElementById('chart');
   let chart;
-
   const provinceBoost = {Ontario:8, Quebec:6, 'British Columbia':7, Alberta:5, Manitoba:4, 'Nova Scotia':4};
   const industryBoost = {Finance:10, Healthcare:12, Retail:8, Education:6, Government:11, Technology:9};
   const cloudBoost = {Low:2, Medium:6, High:11};
@@ -150,7 +164,7 @@
   const mfaBoost = {Yes:-12, No:12};
   const backupBoost = {Daily:-10, Weekly:-5, Monthly:4, None:14};
   const vendorBoost = {Low:1, Medium:5, High:10};
-  const levelMap = s => s < 30 ? ['Low','Balanced profile','Monitor'] : s < 60 ? ['Medium','Needs hardening','Improve controls'] : ['High','Urgent attention','Act now'];
+  const levelMap = s => s < 30 ? ['Low','Healthy baseline controls','Monitor'] : s < 60 ? ['Medium','Needs hardening','Improve controls'] : ['High','Urgent attention','Act now'];
 
   function baseScore(){
     const size = +size.value;
@@ -181,36 +195,29 @@
     actionText.textContent = action;
     riskBar.style.width = score + '%';
     riskBar.style.background = score < 30 ? 'linear-gradient(90deg,var(--good),#4ade80)' : score < 60 ? 'linear-gradient(90deg,var(--warn),#fbbf24)' : 'linear-gradient(90deg,var(--bad),#fb7185)';
-    const threats = [
-      Math.max(5, score - 18),
-      Math.max(5, score - 28),
-      Math.max(5, score - 35),
-      Math.max(5, 100 - score)
-    ];
+    miniMfa.textContent = mfa.value === 'Yes' ? 'On' : 'Off';
+    miniBackup.textContent = backup.value;
+    miniCloud.textContent = cloud.value;
+    miniTraining.textContent = training.value;
+    const threats = [Math.max(5, score - 18), Math.max(5, score - 28), Math.max(5, score - 35), Math.max(5, 100 - score)];
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
       type: 'bar',
-      data: { labels: ['Ransomware','Phishing','Breach','Readiness'], datasets:[{label:'Score', data: threats, backgroundColor:['#ef4444','#f59e0b','#a855f7','#22c55e'], borderRadius:12}] },
+      data: { labels: ['Ransomware','Phishing','Breach','Readiness'], datasets:[{label:'Score', data: threats, backgroundColor:['#ef4444','#f59e0b','#7c3aed','#22c55e'], borderRadius:12}] },
       options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, suggestedMax:100, ticks:{color:getComputedStyle(document.body).getPropertyValue('--muted')}, grid:{color:'rgba(148,163,184,.15)'}}, x:{ticks:{color:getComputedStyle(document.body).getPropertyValue('--text')}, grid:{display:false}}} }
     });
-
     playbook.innerHTML = '';
     const items = [
       [score < 30 ? 'good' : 'warn', score < 30 ? 'Maintain controls and review monthly.' : 'Improve baseline controls this week.'],
-      [mfa.value === 'No' ? 'bad' : 'good', mfa.value === 'No' ? 'Enable MFA on all accounts.' : 'MFA is already helping reduce account risk.'],
+      [mfa.value === 'No' ? 'bad' : 'good', mfa.value === 'No' ? 'Enable MFA on all accounts.' : 'MFA is helping reduce account risk.'],
       [backup.value === 'None' || backup.value === 'Monthly' ? 'bad' : 'good', backup.value === 'None' || backup.value === 'Monthly' ? 'Increase backups and test restore steps.' : 'Backup posture is healthy.'],
       [training.value === 'None' || training.value === 'Yearly' ? 'warn' : 'good', training.value === 'None' || training.value === 'Yearly' ? 'Improve user awareness training cadence.' : 'Training cadence is reasonable.']
     ];
     items.forEach(([cls, text]) => { const d = document.createElement('div'); d.className = `tip ${cls}`; d.textContent = text; playbook.appendChild(d); });
   }
 
-  function toggleTheme(){
-    app.dataset.theme = app.dataset.theme === 'dark' ? 'light' : 'dark';
-    computeRisk();
-  }
-  function resetForm(){
-    province.value='Ontario'; industry.value='Finance'; size.value=120; sizeVal.textContent='120'; remote.value=35; remoteVal.textContent='35%'; cloud.value='Medium'; phish.value=4; training.value='Quarterly'; ir.value='Yes'; mfa.value='Yes'; backup.value='Weekly'; vendor.value='Medium'; sensitive.checked=false; computeRisk();
-  }
+  function toggleTheme(){ app.dataset.theme = app.dataset.theme === 'dark' ? 'light' : 'dark'; computeRisk(); }
+  function resetForm(){ province.value='Ontario'; industry.value='Finance'; size.value=120; sizeVal.textContent='120'; remote.value=35; remoteVal.textContent='35%'; cloud.value='Medium'; phish.value=4; training.value='Quarterly'; ir.value='Yes'; mfa.value='Yes'; backup.value='Weekly'; vendor.value='Medium'; sensitive.checked=false; computeRisk(); }
   function downloadJSON(){
     const data = { province:province.value, industry:industry.value, size:+size.value, remote:+remote.value, cloud:cloud.value, phishingIncidents:+phish.value, training:training.value, incidentResponse:ir.value, mfa:mfa.value, backup:backup.value, vendor:vendor.value, sensitiveData:sensitive.checked, riskScore:baseScore(), generatedAt:new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
@@ -220,3 +227,8 @@
 </script>
 </body>
 </html>
+'''
+
+(base / 'index.html').write_text(html, encoding='utf-8')
+(base / 'index.html.meta.json').write_text(json.dumps({"caption":"Polished SOC dashboard code","description":"A blue cybersecurity-themed interactive dashboard with more factors, summary cards, and charting."}, indent=2), encoding='utf-8')
+print('updated index.html')
