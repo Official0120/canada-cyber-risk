@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanadaCyberRisk - Provincial Threat Heatmap | Nirali Rana</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🛡️ CanadaCyberRisk: Provincial Cyber Risk Simulator</h1>
+        <p>Entry-Level Risk Analyst Tool | Built by Nirali Rana (Hamilton, ON) | Live Demo for SOC/Risk Roles</p>
+    </header>
+    <main>
+        <section id="input-form">
+            <h2>Simulate Your Risk</h2>
+            <label>Province/Territory: <select id="province">
+                <option value="ON">Ontario (High Ransomware)</option>
+                <option value="QC">Quebec</option>
+                <option value="BC">British Columbia</option>
+                <!-- Add all: AB, SK, MB, etc. -->
+            </select></label>
+            <label>Industry: <select id="industry"><option>Healthcare</option><option>Finance</option><option>Gov</option></select></label>
+            <label>Company Size (Employees): <input type="range" id="size" min="1" max="1000" value="50"></label>
+            <label>Remote Workers %: <input type="range" id="remote" min="0" max="100" value="20"></label>
+            <button onclick="runSimulation()">Run Monte Carlo Risk Assessment</button>
+        </section>
+        <section id="results">
+            <canvas id="heatmap"></canvas>
+            <div id="risk-score"></div>
+            <div id="playbook"></div>
+            <button onclick="exportPDF()">Export Report (PDF)</button>
+        </section>
+        <footer>
+            <p>Data: CCCS NCTA 2025-2026 (Ransomware #1 Threat). PIPEDA Compliant Playbooks.[web:23][web:25]</p>
+        </footer>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
